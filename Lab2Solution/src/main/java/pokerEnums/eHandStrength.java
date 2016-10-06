@@ -2,16 +2,21 @@ package pokerEnums;
 
 public enum eHandStrength {
 
-	RoyalFlush(100, "isHandRoyalFlush") {
+	RoyalFlush(110, "isHandRoyalFlush") {
 		public String toString() {
 			return "Royal Flush";
 		}
 	},
-	StraightFlush(90, "isHandStraightFlush") {
+	StraightFlush(100, "isHandStraightFlush") {
 		public String toString() {
 			return "Straight Flush";
 		}
 	},
+	FiveOfAKind(85, "isHandFiveOfAKind"){
+			public String toString(){
+				return "Five of a Kind";
+			}
+		},
 	FourOfAKind(80, "isHandFourOfAKind") {
 		public String toString() {
 			return "Four of a Kind";

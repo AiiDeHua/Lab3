@@ -4,17 +4,21 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 import pokerEnums.eCardNo;
 import pokerEnums.eHandStrength;
 import pokerEnums.eRank;
 import pokerEnums.eSuit;
+import pokerExceptions.HandException;
+import pokerExceptions.exHand;
 
 public class Hand {
 
 	private ArrayList<Card> CardsInHand = new ArrayList<Card>();
 	private boolean bScored;
 	private HandScore hs;
+	private ArrayList<Card> Hand;
 
 	private ArrayList<Card> getCardsInHand() {
 		return CardsInHand;
@@ -31,8 +35,23 @@ public class Hand {
 	public HandScore getHs() {
 		return hs;
 	}
+	public void SetHand(ArrayList<Card> hand){
+		this.Hand = hand;
+	}
 
-	public void EvaulateHand() {
+	public static Hand PickBestHand(ArrayList<Hand> Hands) throws exHand {
+		ArrayList<Hand> AllHands = new ArrayList<Hand>();
+		for (Hand h : Hands) {
+			AllHands.add(h);
+		}
+		Collections.sort(AllHands, HandRank);
+		if (Hands.get(0).getHs() == Hands.get(1).getHs()) {
+			throw new exHand(Hands.get(0));
+		}
+		return Hands.get(0);
+	}
+
+	public void Evaluate() {
 		try {
 			Hand h = EvaluateHand(this);
 			h.hs = h.getHs();
@@ -51,67 +70,95 @@ public class Hand {
 	 * @return
 	 * @throws HandException
 	 */
-	static Hand EvaluateHand(Hand h) throws Exception {
-
-		// Sort the colleciton (by hand rank)
+	static Hand EvaluateHand(Hand h) throws HandException {
+		
 		Collections.sort(h.getCardsInHand());
 
-		// TODO - Lab 3 Here's the code to throw the HandException
-		// TODO - Implement HandException
-		/*
-		 * if (h.getCardsInHand().size() != 5) { throw new
-		 * HandException(h,eHandExceptionType.ShortHand); }
-		 */
+		if (h.getCardsInHand().size() != 5) {
+			throw new HandException(h);
+		}
 
-		ArrayList<Hand> ExplodedHands = new ArrayList<Hand>();
-		ExplodedHands.add(h);
+		HandScore hs = new HandScore();
 
-		ExplodedHands = ExplodeHands(ExplodedHands);
+		try {
+			Class<?> c = Class.forName("pokerBase.Hand");
 
-		for (Hand hEval : ExplodedHands) {
+			for (eHandStrength hstr : eHandStrength.values()) {
+				Class[] cArg = new Class[2];
+				cArg[0] = pokerBase.Hand.class;
+				cArg[1] = pokerBase.HandScore.class;
 
-			HandScore hs = new HandScore();
-			try {
-				Class<?> c = Class.forName("pokerBase.Hand");
+				Method meth = c.getMethod(hstr.getEvalMethod(), cArg);
+				Object o = meth.invoke(null, new Object[] { h, hs });
 
-				for (eHandStrength hstr : eHandStrength.values()) {
-					Class[] cArg = new Class[2];
-					cArg[0] = pokerBase.Hand.class;
-					cArg[1] = pokerBase.HandScore.class;
-
-					Method meth = c.getMethod(hstr.getEvalMethod(), cArg);
-					Object o = meth.invoke(null, new Object[] { hEval, hs });
-
-					// If o = true, that means the hand evaluated- skip the rest
-					// of
-					// the evaluations
-					if ((Boolean) o) {
-						break;
-					}
+				// If o = true, that means the hand evaluated- skip the rest
+				// of
+				// the evaluations
+				if ((Boolean) o) {
+					break;
 				}
+			}
 
-				hEval.bScored = true;
-				hEval.hs = hs;
+			h.bScored = true;
+			h.hs = hs;
 
-			} catch (ClassNotFoundException x) {
-				x.printStackTrace();
-			} catch (IllegalAccessException x) {
-				x.printStackTrace();
-			} catch (NoSuchMethodException e) {
-				System.out.println(e.getMessage());
-				e.printStackTrace();
-			} catch (SecurityException e) {
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
+		} catch (ClassNotFoundException x) {
+			x.printStackTrace();
+		} catch (IllegalAccessException x) {
+			x.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+
+		return h;
+	}
+	
+	public static ArrayList<Hand> ExplodeHands(Hand h) {
+
+		ArrayList<Hand> ReturnHands = new ArrayList<Hand>();
+		
+		ReturnHands.add(h);
+		for (int iCard = 0; iCard < 5; iCard++) {
+			ReturnHands = SubstituteCard(iCard, ReturnHands);
+		}
+		return ReturnHands;
+	}
+
+	private static ArrayList<Hand> SubstituteCard(int iCardSub, ArrayList<Hand> hands) {
+		ArrayList<Hand> CreatedHands = new ArrayList<Hand>();
+		Deck CreatedDeck = new Deck();
+
+		for (Hand h : hands) {
+			if ((h.getCardsInHand().get(iCardSub).isbWild() == true)
+					|| (h.getCardsInHand().get(iCardSub).geteSuit() == eSuit.JOKER)) {
+				for (Card JokerDeckCard : CreatedDeck.getdeck()) {
+					Hand CreatedHand = new Hand();
+					for (int iCard = 0; iCard < 5; iCard++) {
+						if (iCardSub == iCard) {
+							CreatedHand.AddToCardsInHand(JokerDeckCard);
+						} else {
+							CreatedHand.AddToCardsInHand(h.getCardsInHand().get(iCard));
+						}
+					}
+					CreatedHands.add(CreatedHand);
+				}
+			} else {
+				Hand CreatedHand = new Hand();
+				for (int iCard = 0; iCard < 5; iCard++) {
+					CreatedHand.AddToCardsInHand(h.getCardsInHand().get(iCard));
+				}
+				CreatedHands.add(CreatedHand);
 			}
 		}
 
-		// TODO - Lab 3. ExplodedHands has a bunch of hands.
-		// Either 1, 52, 2
-		return h;
+		return CreatedHands;
 	}
 
 	/**
@@ -121,9 +168,48 @@ public class Hand {
 	 * @return
 	 */
 
-	private static ArrayList<Hand> ExplodeHands(ArrayList<Hand> Hands) {
-		// TODO - Lab3 Implement this
-		return null;
+	/*
+	 * private static ArrayList<Hand> ExplodeHands(ArrayList<Hand> Hands) {
+	 * 
+	 * // if there are five jokers in the hand, instead doing 52^5, just set it
+	 * // to the highest hand strength, // the royal flush. if
+	 * (Hands.get(0).getCardsInHand().get(4).geteRank() != eRank.JOKER) { Hand
+	 * RoyalFlush = new Hand(); RoyalFlush.AddToCardsInHand(new
+	 * Card(eSuit.CLUBS, eRank.ACE, 1)); RoyalFlush.AddToCardsInHand(new
+	 * Card(eSuit.CLUBS, eRank.KING, 1)); RoyalFlush.AddToCardsInHand(new
+	 * Card(eSuit.CLUBS, eRank.QUEEN, 1)); RoyalFlush.AddToCardsInHand(new
+	 * Card(eSuit.CLUBS, eRank.JACK, 1)); RoyalFlush.AddToCardsInHand(new
+	 * Card(eSuit.CLUBS, eRank.TEN, 1)); Hands.add(RoyalFlush); return Hands; }
+	 * 
+	 * int c = Hands.get(0).getCardsInHand().get(0).getiCardNbr(); for (int
+	 * count = 0; count < 5; count++) { if
+	 * (Hands.get(0).getCardsInHand().get(count).geteRank() == eRank.JOKER) {
+	 * Hands.get(0).getCardsInHand().remove(0); for (eSuit suit :
+	 * eSuit.values()) { for (eRank rank : eRank.values()) {
+	 * Hands.AddToCardsInHand(new Card(suit, rank, c)); } } } } return null; }
+	 * 
+	 * private static ArrayList<Hand> SubstituteCards (Hand h){ ArrayList<Hand>
+	 * hands = new ArrayList<Hand>(); hands.add(h); for (int index = 0 ; index <
+	 * 3 ; index++){ if (h.getCardsInHand().get(index).geteRank() == eRank.JOKER
+	 * || h.getCardsInHand().get(0).isbWild() == true){ ArrayList<Card>
+	 * CreatedHand = new ArrayList<Card>(); CreatedHand.add(new
+	 * Card(h.getCardsInHand().get(4).geteSuit(),));
+	 * hands.AddCardToHand(CreatedHand); } } }
+	 */
+
+	public static boolean isHandFiveOfAKind(Hand h, HandScore hs) {
+		boolean IsFiveOfAKind = false;
+
+		if (h.getCardsInHand().get(eCardNo.SecondCard.getCardNo()).geteRank() == h.getCardsInHand()
+				.get(eCardNo.FifthCard.getCardNo()).geteRank()
+				&& h.getCardsInHand().get(eCardNo.FirstCard.getCardNo()).geteRank() == eRank.JOKER) {
+			IsFiveOfAKind = true;
+			hs.setHandStrength(eHandStrength.FiveOfAKind.getHandStrength());
+			hs.setHiHand(h.getCardsInHand().get(eCardNo.FirstCard.getCardNo()).geteRank().getiRankNbr());
+			hs.setLoHand(0);
+
+		}
+		return IsFiveOfAKind;
 	}
 
 	public static boolean isHandRoyalFlush(Hand h, HandScore hs) {
@@ -448,4 +534,55 @@ public class Hand {
 		hs.setKickers(kickers);
 		return true;
 	}
+
+	public static Comparator<Hand> HandRank = new Comparator<Hand>() {
+		public int compare(Hand h1, Hand h2) {
+
+			int difference;
+
+			difference = h2.getHs().getHandStrength() - h1.getHs().getHandStrength();
+
+			if (difference != 0) {
+				return difference;
+			}
+			difference = h2.getHs().getHiHand() - h1.getHs().getHiHand();
+			if (difference != 0) {
+				return difference;
+			}
+			difference = h2.getHs().getLoHand() - h1.getHs().getLoHand();
+			if (difference != 0) {
+				return difference;
+			}
+
+			if (h2.getHs().getKickers().size() > 0 && h1.getHs().getKickers().size() > 0) {
+				difference = h2.getHs().getKickers().get(eCardNo.FirstCard.getCardNo()).geteRank().getiRankNbr()
+						- h1.getHs().getKickers().get(eCardNo.FirstCard.getCardNo()).geteRank().getiRankNbr();
+			}
+			if (difference != 0) {
+				return difference;
+			}
+			if (h2.getHs().getKickers().size() > 1 && h1.getHs().getKickers().size() > 1) {
+				difference = h2.getHs().getKickers().get(eCardNo.SecondCard.getCardNo()).geteRank().getiRankNbr()
+						- h1.getHs().getKickers().get(eCardNo.SecondCard.getCardNo()).geteRank().getiRankNbr();
+			}
+			if (difference != 0) {
+				return difference;
+			}
+			if (h2.getHs().getKickers().size() > 2 && h1.getHs().getKickers().size() > 2) {
+				difference = h2.getHs().getKickers().get(eCardNo.ThirdCard.getCardNo()).geteRank().getiRankNbr()
+						- h1.getHs().getKickers().get(eCardNo.ThirdCard.getCardNo()).geteRank().getiRankNbr();
+			}
+			if (difference != 0) {
+				return difference;
+			}
+			if (h2.getHs().getKickers().size() > 3 && h1.getHs().getKickers().size() > 3) {
+				difference = h2.getHs().getKickers().get(eCardNo.FourthCard.getCardNo()).geteRank().getiRankNbr()
+						- h1.getHs().getKickers().get(eCardNo.FourthCard.getCardNo()).geteRank().getiRankNbr();
+			}
+			if (difference != 0) {
+				return difference;
+			}
+			return 0;
+		}
+	};
 }
