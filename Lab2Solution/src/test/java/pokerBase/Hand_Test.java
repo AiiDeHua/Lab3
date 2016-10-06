@@ -108,22 +108,6 @@ public class Hand_Test {
 		assertTrue(h.getHs().getHiHand() == eRank.JOKER.getiRankNbr());
 	}
 
-	/*
-	 * @Test public void TestTwoJokers() throws exHand { Hand h = new Hand();
-	 * h.AddToCardsInHand(new Card(eSuit.JOKER, eRank.JOKER,1));
-	 * h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.JACK,1));
-	 * h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.TEN,1));
-	 * h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.KING,1));
-	 * h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.ACE,1)); ArrayList<Hand>
-	 * hands = new ArrayList<Hand>(); hands = Hand.ExplodeHands(h); //Hand hz =
-	 * new Hand(); h = Hand.PickBestHand(hands); try { h = Hand.EvaluateHand(h);
-	 * } catch (Exception e) { // TODO Auto-generated catch block
-	 * e.printStackTrace(); }
-	 * 
-	 * assertTrue(h.getHs().getHandStrength() ==
-	 * eHandStrength.RoyalFlush.getHandStrength());
-	 * assertTrue(h.getHs().getHiHand() == eRank.JOKER.getiRankNbr()); }
-	 */
 	@Test
 	public void TestFourOfAKind1() {
 		Hand h = new Hand();
@@ -272,6 +256,24 @@ public class Hand_Test {
 
 		assertTrue(h.getHs().getHandStrength() == eHandStrength.Straight.getHandStrength());
 		assertTrue(h.getHs().getHiHand() == eRank.ACE.getiRankNbr());
+	}
+	@Test
+	public void TestStraight3() {
+		Hand h = new Hand();
+		h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.ACE, 1));
+		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.TWO, 1));
+		h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.THREE, 1));
+		h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.FOUR, 1));
+		h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.FIVE, 1));
+
+		try {
+			h = Hand.EvaluateHand(h);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		assertTrue(h.getHs().getHandStrength() == eHandStrength.Straight.getHandStrength());
+		assertTrue(h.getHs().getHiHand() == eRank.FIVE.getiRankNbr());
 	}
 
 	@Test
