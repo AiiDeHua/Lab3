@@ -19,7 +19,7 @@ public class Hand {
 	private boolean bScored;
 	private HandScore hs;
 	private ArrayList<Card> Hand;
-
+	
 	private ArrayList<Card> getCardsInHand() {
 		return CardsInHand;
 	}
@@ -35,27 +35,46 @@ public class Hand {
 	public HandScore getHs() {
 		return hs;
 	}
-	public void SetHand(ArrayList<Card> hand){
+
+	public void SetHand(ArrayList<Card> hand) {
 		this.Hand = hand;
 	}
+	
+	
+	private void setCardsInHand(ArrayList<Card> cardsInHand) {
+		CardsInHand = cardsInHand;
+	}
 
-	public static Hand PickBestHand(ArrayList<Hand> Hands) throws exHand{
+	public static Hand PickBestHand(ArrayList<Hand> Hands) throws exHand {
 		ArrayList<Hand> AllHands = new ArrayList<Hand>();
-		for (Hand h : Hands){
+		for (Hand h : Hands) {
 			AllHands.add(Evaluate(h));
 		}
 
 		Collections.sort(AllHands, HandRank);
-		
+
 		if (Hands.get(0).getHs() == Hands.get(1).getHs()) {
-			
+
 			throw new exHand(Hands.get(0));
-		
+
 		}
 		return AllHands.get(0);
 	}
 
 	public static Hand Evaluate(Hand h) {
+		
+		if ((h.getCardsInHand().get(eCardNo.FifthCard.getCardNo()).isbWild()) ||
+				(h.getCardsInHand().get(eCardNo.FifthCard.getCardNo()).geteRank() == eRank.JOKER))
+				{
+			Hand hnd = new Hand();
+			hnd.setCardsInHand(h.getCardsInHand());
+			HandScore hs = new HandScore();
+			hs.setHandStrength(eHandStrength.RoyalFlush.ordinal());
+			hs.setHiHand(eRank.ACE.ordinal());
+			hs.setLoHand(0);
+			return hnd;
+		}
+		
 		try {
 			h = EvaluateHand(h);
 			h.hs = h.getHs();
@@ -75,7 +94,7 @@ public class Hand {
 	 * @throws HandException
 	 */
 	static Hand EvaluateHand(Hand h) throws HandException {
-		
+
 		Collections.sort(h.getCardsInHand());
 
 		if (h.getCardsInHand().size() != 5) {
@@ -123,11 +142,11 @@ public class Hand {
 
 		return h;
 	}
-	
+
 	public static ArrayList<Hand> ExplodeHands(Hand h) {
 
 		ArrayList<Hand> ReturnHands = new ArrayList<Hand>();
-		
+
 		ReturnHands.add(h);
 		for (int iCard = 0; iCard < 5; iCard++) {
 			ReturnHands = SubstituteCard(iCard, ReturnHands);
@@ -172,21 +191,6 @@ public class Hand {
 	 * @return
 	 */
 
-	public static boolean isHandFiveOfAKind(Hand h, HandScore hs) {
-		boolean IsFiveOfAKind = false;
-
-		if (h.getCardsInHand().get(eCardNo.SecondCard.getCardNo()).geteRank() == h.getCardsInHand()
-				.get(eCardNo.FifthCard.getCardNo()).geteRank()
-				&& h.getCardsInHand().get(eCardNo.FirstCard.getCardNo()).geteRank() == eRank.JOKER) {
-			IsFiveOfAKind = true;
-			hs.setHandStrength(eHandStrength.FiveOfAKind.getHandStrength());
-			hs.setHiHand(h.getCardsInHand().get(eCardNo.FirstCard.getCardNo()).geteRank().getiRankNbr());
-			hs.setLoHand(0);
-
-		}
-		return IsFiveOfAKind;
-	}
-
 	public static boolean isHandRoyalFlush(Hand h, HandScore hs) {
 
 		Card c = new Card();
@@ -220,6 +224,35 @@ public class Hand {
 		}
 
 		return isRoyalFlush;
+	}
+
+	public static boolean isHandFiveOfAKind(Hand h, HandScore hs) {
+		boolean IsFiveOfAKind = false;
+
+		if (h.getCardsInHand().get(eCardNo.SecondCard.getCardNo()).geteRank() == h.getCardsInHand()
+				.get(eCardNo.FifthCard.getCardNo()).geteRank()
+				&& h.getCardsInHand().get(eCardNo.FirstCard.getCardNo()).geteRank() == eRank.JOKER) {
+			IsFiveOfAKind = true;
+			hs.setHandStrength(eHandStrength.FiveOfAKind.getHandStrength());
+			hs.setHiHand(h.getCardsInHand().get(eCardNo.FirstCard.getCardNo()).geteRank().getiRankNbr());
+			hs.setLoHand(0);
+
+		} else if ((h.getCardsInHand().get(eCardNo.SecondCard.getCardNo()).geteRank() == h.getCardsInHand()
+				.get(eCardNo.FifthCard.getCardNo()).geteRank())
+				&& (h.getCardsInHand().get(eCardNo.FirstCard.getCardNo()).isbWild() == true)) {
+			IsFiveOfAKind = true;
+			hs.setHandStrength(eHandStrength.FiveOfAKind.getHandStrength());
+			hs.setHiHand(h.getCardsInHand().get(eCardNo.FirstCard.getCardNo()).geteRank().getiRankNbr());
+			hs.setLoHand(0);
+		} else if ((h.getCardsInHand().get(eCardNo.FirstCard.getCardNo()).geteRank() == h.getCardsInHand()
+				.get(eCardNo.FourthCard.getCardNo()).geteRank())
+				&& (h.getCardsInHand().get(eCardNo.FifthCard.getCardNo()).isbWild() == true)) {
+			IsFiveOfAKind = true;
+			hs.setHandStrength(eHandStrength.FiveOfAKind.getHandStrength());
+			hs.setHiHand(h.getCardsInHand().get(eCardNo.FirstCard.getCardNo()).geteRank().getiRankNbr());
+			hs.setLoHand(0);
+		}
+		return IsFiveOfAKind;
 	}
 
 	/**

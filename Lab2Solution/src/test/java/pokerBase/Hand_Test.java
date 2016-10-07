@@ -47,25 +47,44 @@ public class Hand_Test {
 		h = Hand.EvaluateHand(h);
 	}
 	@Test
-	public void TestJoker() throws exHand {
+	public void TestJoker1() throws exHand {
 		Hand h = new Hand();
-		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.QUEEN, 1));
-		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.ACE, 1));
-		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.JACK, 1));
-		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.KING, 1));
 		h.AddToCardsInHand(new Card(eSuit.JOKER, eRank.JOKER, 1));
-		ArrayList<Hand> hz = new ArrayList<Hand>();
-		hz = Hand.ExplodeHands(h);
-		Hand hx = new Hand();
-		hx = Hand.PickBestHand(hz);
+		h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.TEN, 1));
+		h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.JACK, 1));
+		h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.QUEEN, 1));
+		h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.KING, 1));
+		ArrayList<Hand> AllHands = new ArrayList<Hand>();
+		AllHands = Hand.ExplodeHands(h);
+		Hand BestHand = new Hand();
+		BestHand = Hand.PickBestHand(AllHands);
 		try {
-			hx = Hand.EvaluateHand(hx);
+			BestHand = Hand.EvaluateHand(BestHand);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		assertTrue(hx.getHs().getHandStrength() == eHandStrength.RoyalFlush.getHandStrength());
-		//assertTrue(h.getHs().getHiHand() == eRank.ACE.getiRankNbr());
+		assertTrue(BestHand.getHs().getHandStrength() == eHandStrength.RoyalFlush.getHandStrength());
+		assertTrue(BestHand.getHs().getHiHand() == eRank.ACE.getiRankNbr());
+	}
+	@Test
+	public void TestJoker2() throws exHand {
+		Hand h = new Hand();
+		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.QUEEN, 1));
+		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.JACK, 1));
+		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.ACE, 1));
+		h.AddToCardsInHand(new Card(eSuit.JOKER, eRank.JOKER, 1));
+		h.AddToCardsInHand(new Card(eSuit.JOKER, eRank.JOKER, 1));
+		ArrayList<Hand> AllHands = new ArrayList<Hand>();
+		AllHands = Hand.ExplodeHands(h);
+		Hand BestHand = new Hand();
+		BestHand = Hand.PickBestHand(AllHands);
+		try {
+			BestHand = Hand.EvaluateHand(BestHand);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		assertTrue(BestHand.getHs().getHandStrength() == eHandStrength.RoyalFlush.getHandStrength());
+		assertTrue(BestHand.getHs().getHiHand() == eRank.ACE.getiRankNbr());
 	}
 
 	@Test
