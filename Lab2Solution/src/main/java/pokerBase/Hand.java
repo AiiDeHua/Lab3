@@ -39,27 +39,31 @@ public class Hand {
 		this.Hand = hand;
 	}
 
-	public static Hand PickBestHand(ArrayList<Hand> Hands) throws exHand {
+	public static Hand PickBestHand(ArrayList<Hand> Hands) throws exHand{
 		ArrayList<Hand> AllHands = new ArrayList<Hand>();
-		for (Hand h : Hands) {
-			AllHands.add(h);
+		for (Hand h : Hands){
+			AllHands.add(Evaluate(h));
 		}
+
 		Collections.sort(AllHands, HandRank);
+		
 		if (Hands.get(0).getHs() == Hands.get(1).getHs()) {
+			
 			throw new exHand(Hands.get(0));
+		
 		}
-		return Hands.get(0);
+		return AllHands.get(0);
 	}
 
-	public void Evaluate() {
+	public static Hand Evaluate(Hand h) {
 		try {
-			Hand h = EvaluateHand(this);
+			h = EvaluateHand(h);
 			h.hs = h.getHs();
 			h.bScored = h.bScored;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		return h;
 	}
 
 	/**
@@ -166,35 +170,6 @@ public class Hand {
 	 * @param h
 	 * @param hs
 	 * @return
-	 */
-
-	/*
-	 * private static ArrayList<Hand> ExplodeHands(ArrayList<Hand> Hands) {
-	 * 
-	 * // if there are five jokers in the hand, instead doing 52^5, just set it
-	 * // to the highest hand strength, // the royal flush. if
-	 * (Hands.get(0).getCardsInHand().get(4).geteRank() != eRank.JOKER) { Hand
-	 * RoyalFlush = new Hand(); RoyalFlush.AddToCardsInHand(new
-	 * Card(eSuit.CLUBS, eRank.ACE, 1)); RoyalFlush.AddToCardsInHand(new
-	 * Card(eSuit.CLUBS, eRank.KING, 1)); RoyalFlush.AddToCardsInHand(new
-	 * Card(eSuit.CLUBS, eRank.QUEEN, 1)); RoyalFlush.AddToCardsInHand(new
-	 * Card(eSuit.CLUBS, eRank.JACK, 1)); RoyalFlush.AddToCardsInHand(new
-	 * Card(eSuit.CLUBS, eRank.TEN, 1)); Hands.add(RoyalFlush); return Hands; }
-	 * 
-	 * int c = Hands.get(0).getCardsInHand().get(0).getiCardNbr(); for (int
-	 * count = 0; count < 5; count++) { if
-	 * (Hands.get(0).getCardsInHand().get(count).geteRank() == eRank.JOKER) {
-	 * Hands.get(0).getCardsInHand().remove(0); for (eSuit suit :
-	 * eSuit.values()) { for (eRank rank : eRank.values()) {
-	 * Hands.AddToCardsInHand(new Card(suit, rank, c)); } } } } return null; }
-	 * 
-	 * private static ArrayList<Hand> SubstituteCards (Hand h){ ArrayList<Hand>
-	 * hands = new ArrayList<Hand>(); hands.add(h); for (int index = 0 ; index <
-	 * 3 ; index++){ if (h.getCardsInHand().get(index).geteRank() == eRank.JOKER
-	 * || h.getCardsInHand().get(0).isbWild() == true){ ArrayList<Card>
-	 * CreatedHand = new ArrayList<Card>(); CreatedHand.add(new
-	 * Card(h.getCardsInHand().get(4).geteSuit(),));
-	 * hands.AddCardToHand(CreatedHand); } } }
 	 */
 
 	public static boolean isHandFiveOfAKind(Hand h, HandScore hs) {

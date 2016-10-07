@@ -3,7 +3,6 @@ package pokerBase;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -36,7 +35,7 @@ public class Hand_Test {
 	@After
 	public void tearDown() throws Exception {
 	}
-
+	
 	@Test(expected = HandException.class)
 	public void TestEvalShortHand() throws HandException {
 
@@ -46,6 +45,27 @@ public class Hand_Test {
 		h.AddToCardsInHand(new Card(eSuit.CLUBS, eRank.ACE, 0));
 
 		h = Hand.EvaluateHand(h);
+	}
+	@Test
+	public void TestJoker() throws exHand {
+		Hand h = new Hand();
+		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.QUEEN, 1));
+		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.ACE, 1));
+		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.JACK, 1));
+		h.AddToCardsInHand(new Card(eSuit.DIAMONDS, eRank.KING, 1));
+		h.AddToCardsInHand(new Card(eSuit.JOKER, eRank.JOKER, 1));
+		ArrayList<Hand> hz = new ArrayList<Hand>();
+		hz = Hand.ExplodeHands(h);
+		Hand hx = new Hand();
+		hx = Hand.PickBestHand(hz);
+		try {
+			hx = Hand.EvaluateHand(hx);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		assertTrue(hx.getHs().getHandStrength() == eHandStrength.RoyalFlush.getHandStrength());
+		//assertTrue(h.getHs().getHiHand() == eRank.ACE.getiRankNbr());
 	}
 
 	@Test
